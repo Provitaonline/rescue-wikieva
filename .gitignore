@@ -1,0 +1,12 @@
+*.log
+.cache
+.DS_Store
+output
+*.txt
+src/.temp
+node_modules
+dist
+.env
+.env.*
+
+.netlify
