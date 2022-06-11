@@ -44,19 +44,9 @@ for (const file of files) {
 fs.writeFileSync('./output/taxonomy/taxonomy.json', JSON.stringify(taxonomy, null, 2))
 copyExtras()
 
-//$ = cheerio.load(fs.readFileSync('../wikieva-archive/web/lithogenes_valencia.html',{encoding:'utf8', flag:'r'}))
-//$ = cheerio.load(fs.readFileSync('../wikieva-archive/web/ocyurus_chrysurus.html',{encoding:'utf8', flag:'r'}))
-//extract('ocyurus_chrysurus.html')
-//outputFile('ocyurus_chrysurus.html')
-
 console.log('Finished processing')
 console.log('Files read:', numRec, 'Files with description:', numRecWithInfo, 'Files written:', numFiles)
 console.log('Risk stats:', riskStats)
-
-//console.log(content)
-//const $ = cheerio.load(fs.readFileSync('../wikieva-archive/web/batrochoglanis_mathisoni.html',{encoding:'utf8', flag:'r'}))
-//const $ = cheerio.load(fs.readFileSync('../wikieva-archive/web/tapirus_pinchaque.html',{encoding:'utf8', flag:'r'}))
-//const $ = cheerio.load(fs.readFileSync('../wikieva-archive/web/sylvilagus_brasiliensis.html',{encoding:'utf8', flag:'r'}))
 
 function copyExtras() {
   const filesToCopy = [
