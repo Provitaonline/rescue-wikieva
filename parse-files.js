@@ -9,6 +9,7 @@ console.log('Starting...')
 fs.rmdirSync('./output', { recursive: true })
 fs.mkdirSync('./output')
 fs.mkdirSync('./output/images')
+fs.mkdirSync('./output/taxonomy')
 
 const files = fs.readFileSync('files.txt', 'utf-8').split('\n').filter(Boolean)
 
@@ -17,6 +18,8 @@ let numRec = 0
 let numRecWithInfo = 0
 let numFiles = 0
 let content
+let riskStats = {}
+let taxonomy = {}
 
 for (const file of files) {
   $ = cheerio.load(fs.readFileSync('../wikieva-archive/web/' + file,{encoding:'utf8', flag:'r'}))
@@ -37,28 +40,76 @@ for (const file of files) {
     }
   }
 }
+
+fs.writeFileSync('./output/taxonomy/taxonomy.json', JSON.stringify(taxonomy, null, 2))
+copyExtras()
+
 //$ = cheerio.load(fs.readFileSync('../wikieva-archive/web/lithogenes_valencia.html',{encoding:'utf8', flag:'r'}))
 //$ = cheerio.load(fs.readFileSync('../wikieva-archive/web/ocyurus_chrysurus.html',{encoding:'utf8', flag:'r'}))
 //extract('ocyurus_chrysurus.html')
 //outputFile('ocyurus_chrysurus.html')
 
-console.log('Finished')
-console.log('Files processed:', numRec, 'Files with description:', numRecWithInfo, 'Files written:', numFiles)
+console.log('Finished processing')
+console.log('Files read:', numRec, 'Files with description:', numRecWithInfo, 'Files written:', numFiles)
+console.log('Risk stats:', riskStats)
 
 //console.log(content)
 //const $ = cheerio.load(fs.readFileSync('../wikieva-archive/web/batrochoglanis_mathisoni.html',{encoding:'utf8', flag:'r'}))
 //const $ = cheerio.load(fs.readFileSync('../wikieva-archive/web/tapirus_pinchaque.html',{encoding:'utf8', flag:'r'}))
 //const $ = cheerio.load(fs.readFileSync('../wikieva-archive/web/sylvilagus_brasiliensis.html',{encoding:'utf8', flag:'r'}))
 
+function copyExtras() {
+  const filesToCopy = [
+    '50px-bolita_cr.svg.png',
+    '50px-bolita_dd.svg.png',
+    '50px-bolita_en.svg.png',
+    '50px-bolita_er.svg.png',
+    '50px-bolita_ew.svg.png',
+    '50px-bolita_ex.svg.png',
+    '50px-bolita_lc.svg.png',
+    '50px-bolita_na.svg.png',
+    '50px-bolita_ne.svg.png',
+    '50px-bolita_nt.svg.png',
+    '50px-bolita_vu.svg.png',
+    'status_er.svg',
+    'status_iucn3.1_cr_es.svg',
+    'status_iucn3.1_en_es.svg',
+    'status_iucn3.1_lc_es.svg',
+    'status_iucn3.1_nt_es.svg',
+    'status_iucn3.1_vu_es.svg',
+    'status_ne.svg',
+    'status_none_dd.svg',
+    'status_none_ex.svg'
+  ]
+
+  for (const f of filesToCopy) {
+    console.log('Copy', f)
+    fs.copyFileSync('../wikieva-archive/web/images/' + f, './output/images/' + f)
+  }
+}
+
 function outputFile(file) {
-  if (content.kingdom) { // If there is no kingdom, there is nothing
+  if (Object.keys(content).length === 0) {
+    // console.log('Content ignored:', file)
+  } else {
     numFiles++
     let f = './output/' + file.split('.')[0] + '.json'
-    //console.log(f)
     fs.writeFileSync(f, JSON.stringify(content, null, 2))
-  } else {
-    console.log('Content ignored:', content.scientificName)
+    collectTaxonomy(file)
   }
+}
+
+function collectTaxonomy(file) {
+
+  if (!taxonomy[content.kingdom]) taxonomy[content.kingdom] = {}
+  if (!taxonomy[content.kingdom][content.phylum]) taxonomy[content.kingdom][content.phylum] = {}
+  if (!taxonomy[content.kingdom][content.phylum][content.class]) taxonomy[content.kingdom][content.phylum][content.class] = {}
+  if (!taxonomy[content.kingdom][content.phylum][content.class][content.order]) taxonomy[content.kingdom][content.phylum][content.class][content.order] = {}
+  if (!taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family]) taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family] = {}
+  if (!taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus]) taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus] = {}
+
+  taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus][content.species] = file
+
 }
 
 function addToContent(field, fieldContent) {
@@ -70,18 +121,31 @@ function addToContent(field, fieldContent) {
 function extract(file) {
   content = {}
   numRec++
+
+  // Reject empty pages
+  if ($('.noarticletext:contains("Actualmente no hay texto en esta página.")').text()) return
+  // Reject empty kingdom
+  if ($('th:contains("Reino:")').next().eq(0).text().trim() === '') return
+
   addToContent('originalFileName', file)
   addToContent('scientificName', $('#firstHeading').text())
   addToContent('commonName', $('th.cabecera').text().trim())
   addToContent('imageUrl', $('th.cabecera').parent().next().find('td>a>img').attr('src'))
   addToContent('risk', $('th:contains("Riesgo de extinción")').parent().next().find('td>a').eq(1).attr('title'))
-  addToContent('kingdom', $('th:contains("Reino:")').next().text().trim())
-  addToContent('phylum', $('th:contains("Filo:")').next().text().trim())
-  addToContent('class', $('th:contains("Clase:")').next().text().trim())
-  addToContent('order', $('th:contains("Orden:")').next().text().trim())
-  addToContent('family', $('th:contains("Familia:")').next().text().trim())
-  addToContent('genus', $('th:contains("Género:")').next().text().trim())
-  addToContent('species', $('th:contains("Especie:")').next().text().trim())
+
+  if (content.risk in riskStats) {
+    riskStats[content.risk]++
+  } else {
+    riskStats[content.risk] = 1
+  }
+
+  addToContent('kingdom', $('th:contains("Reino:")').next().eq(0).text().trim())
+  addToContent('phylum', $('th:contains("Filo:")').next().eq(0).text().trim())
+  addToContent('class', $('th:contains("Clase:")').next().eq(0).text().trim())
+  addToContent('order', $('th:contains("Orden:")').next().eq(0).text().trim())
+  addToContent('family', $('th:contains("Familia:")').next().eq(0).text().trim())
+  addToContent('genus', $('th:contains("Género:")').next().eq(0).text().trim())
+  addToContent('species', $('th:contains("Especie:")').next().eq(0).text().trim())
   addToContent('binomialName', $('tr:contains("Nombre binomial")').next().find('span>i').text().trim())
   addToContent('binomialNameAuthor', $('tr:contains("Nombre binomial")').next().find('span').eq(1).text().trim())
   addToContent('distributionMapUrl', $('th:contains("Distribución")').parent().next().find('td>a>img').attr('src'))
