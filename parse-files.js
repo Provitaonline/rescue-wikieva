@@ -73,7 +73,6 @@ function copyExtras() {
   ]
 
   for (const f of filesToCopy) {
-    console.log('Copy', f)
     fs.copyFileSync('../wikieva-archive/web/images/' + f, './output/images/' + f)
   }
 }
@@ -123,19 +122,22 @@ function extract(file) {
   addToContent('imageUrl', $('th.cabecera').parent().next().find('td>a>img').attr('src'))
   addToContent('risk', $('th:contains("Riesgo de extinción")').parent().next().find('td>a').eq(1).attr('title'))
 
+  if (content.risk === undefined) {
+    content.risk = 'Datos Insuficientes'
+  }
   if (content.risk in riskStats) {
     riskStats[content.risk]++
   } else {
     riskStats[content.risk] = 1
   }
 
-  addToContent('kingdom', $('th:contains("Reino:")').next().eq(0).text().trim())
-  addToContent('phylum', $('th:contains("Filo:")').next().eq(0).text().trim())
-  addToContent('class', $('th:contains("Clase:")').next().eq(0).text().trim())
-  addToContent('order', $('th:contains("Orden:")').next().eq(0).text().trim())
-  addToContent('family', $('th:contains("Familia:")').next().eq(0).text().trim())
-  addToContent('genus', $('th:contains("Género:")').next().eq(0).text().trim())
-  addToContent('species', $('th:contains("Especie:")').next().eq(0).text().trim())
+  addToContent('kingdom', $('th:contains("Reino:")').next().eq(0).text().trim().replace(/'/g, ''))
+  addToContent('phylum', $('th:contains("Filo:")').next().eq(0).text().trim().replace(/'/g, ''))
+  addToContent('class', $('th:contains("Clase:")').next().eq(0).text().trim().replace(/'/g, ''))
+  addToContent('order', $('th:contains("Orden:")').next().eq(0).text().trim().replace(/'/g, ''))
+  addToContent('family', $('th:contains("Familia:")').next().eq(0).text().trim().replace(/'/g, ''))
+  addToContent('genus', $('th:contains("Género:")').next().eq(0).text().trim().replace(/'/g, ''))
+  addToContent('species', $('th:contains("Especie:")').next().eq(0).text().trim().replace(/'/g, ''))
   addToContent('binomialName', $('tr:contains("Nombre binomial")').next().find('span>i').text().trim())
   addToContent('binomialNameAuthor', $('tr:contains("Nombre binomial")').next().find('span').eq(1).text().trim())
   addToContent('distributionMapUrl', $('th:contains("Distribución")').parent().next().find('td>a>img').attr('src'))
@@ -156,7 +158,7 @@ function extract(file) {
   if (pE.length) addToContent('previousEvaluations', pE)
 
   if ($('h4:contains("Nombres comunes")').next().is('p')) {
-    addToContent('commonNames', $('h4:contains("Nombres comunes")').next().text().trim())
+    addToContent('commonNames', $('h4:contains("Nombres comunes")').next().html().trim())
   }
 
   if ($('h4:contains("Notas taxonómicas")').next().is('p')) {
@@ -164,7 +166,7 @@ function extract(file) {
   }
 
   if ($('h4:contains("Sinónimos")').next().is('p')) {
-    addToContent('synonyms', $('h4:contains("Sinónimos")').next().text().trim())
+    addToContent('synonyms', $('h4:contains("Sinónimos")').next().html().trim())
   }
 
   if ($('h2:contains("Descripción"),h3:contains("Descripción")').next().is('p')) {
@@ -176,10 +178,10 @@ function extract(file) {
     addToContent('distribution', $('h2:contains("Distribución"), h3:contains("Distribución")').next().html().trim())
   }
 
-  addToContent('system', $('li:contains("Sistema")').text().split(': ').pop())
-  addToContent('bioregion', $('li:contains("Bioregión")').text().split(': ').pop())
-  addToContent('altitudeRange', $('li:contains("Intervalo altitudinal")').text().split(': ').pop())
-  addToContent('isEndemic', $('li:contains("Endémica")').text().split(': ').pop())
+  addToContent('system', $('li:contains("Sistema:")').text().split(': ').pop())
+  addToContent('bioregion', $('li:contains("Bioregión:")').text().split(': ').pop())
+  addToContent('altitudeRange', $('li:contains("Intervalo altitudinal (m):")').text().split(': ').pop())
+  addToContent('isEndemic', $('li:contains("Endémica:")').text().split(': ').pop())
 
   let status = ''
   let n = $('h2:contains("Situación"), h3:contains("Situación")').next()
@@ -205,7 +207,9 @@ function extract(file) {
     addToContent('conservation', $('h2:contains("Conservación"), h3:contains("Conservación")').next().html().trim())
   }
 
-  addToContent('originalAuthors', $('h4:contains("Autores originales")').next().text().trim())
+  if ($('h4:contains("Autores originales")').next().is('p')) {
+    addToContent('originalAuthors', $('h4:contains("Autores originales")').next().text().trim())
+  }
 
   if ($('h4:contains("Colaboradores")').next().is('p')) {
     addToContent('collaborators', $('h4:contains("Colaboradores")').next().text().trim())
@@ -215,17 +219,29 @@ function extract(file) {
     addToContent('editorsAndCollaborators', $('h3:contains("Editores y Colaboradores")').next().text().trim())
   }
 
-  addToContent('illustrator', $('h4:contains("Ilustrador")').next().text().trim())
+  if ($('h4:contains("Ilustrador")').next().is('p')) {
+    addToContent('illustrator', $('h4:contains("Ilustrador")').next().text().trim())
+  }
 
   let refs = []
   $('h2:contains("Referencias"), h3:contains("Referencias")').next().children().each(function () {
-    refs.push($(this).text().trim())
+    refs.push($(this).html().trim())
   })
 
   if (refs.length === 0) { // Try with paragraphs
     let r = $('h2:contains("Referencias"), h3:contains("Referencias")').next()
-    while (r.is('p')) {
+    /*if (r.is('p')) {
       refs.push(r.text().trim())
+      let s = r.siblings()
+      s.each(function() {
+        if ($(this).is('p')) {
+          refs.push($(this).text().trim())
+        }
+      })
+    } */
+
+    while (r.is('p')) {
+      refs.push(r.html().trim())
       r = r.next()
     }
   }
@@ -235,4 +251,5 @@ function extract(file) {
   let dateInput = $('#footer-info-lastmod').text().split('vez el ').pop().trim().split(' a las ')
 
   addToContent('dateLastUpdated', moment.tz(dateInput[0] + ' ' + dateInput[1], 'DD MMM YYYY HH:mm', 'America/Caracas').format())
+  addToContent('dateExtracted', new Date())
 }
