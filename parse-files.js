@@ -41,10 +41,6 @@ for (const file of files) {
   }
 }
 
-//$ = cheerio.load(fs.readFileSync('../wikieva-archive/web/paleosuchus_trigonatus.html',{encoding:'utf8', flag:'r'}))
-//extract('paleosuchus_trigonatus.html')
-//outputFile('paleosuchus_trigonatus.html')
-
 fs.writeFileSync('./output/taxonomy/taxonomy.json', JSON.stringify(taxonomy, null, 2))
 copyExtras()
 
