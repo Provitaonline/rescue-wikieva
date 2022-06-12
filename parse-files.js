@@ -41,6 +41,10 @@ for (const file of files) {
   }
 }
 
+//$ = cheerio.load(fs.readFileSync('../wikieva-archive/web/paleosuchus_trigonatus.html',{encoding:'utf8', flag:'r'}))
+//extract('paleosuchus_trigonatus.html')
+//outputFile('paleosuchus_trigonatus.html')
+
 fs.writeFileSync('./output/taxonomy/taxonomy.json', JSON.stringify(taxonomy, null, 2))
 copyExtras()
 
@@ -97,7 +101,7 @@ function collectTaxonomy(file) {
   if (!taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family]) taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family] = {}
   if (!taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus]) taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus] = {}
 
-  taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus][content.species] = file
+  taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus][content.species] = file.split('.')[0] + '.json'
 
 }
 
@@ -224,22 +228,16 @@ function extract(file) {
   }
 
   let refs = []
-  $('h2:contains("Referencias"), h3:contains("Referencias")').next().children().each(function () {
-    refs.push($(this).html().trim())
-  })
+  let r = $('h2:contains("Referencias"), h3:contains("Referencias")').next()
+  while (r.is('ul')) { // There might be more than one list!
+    r.children().each(function () {
+      refs.push($(this).html().trim())
+    })
+    r = r.next()
+  }
 
   if (refs.length === 0) { // Try with paragraphs
-    let r = $('h2:contains("Referencias"), h3:contains("Referencias")').next()
-    /*if (r.is('p')) {
-      refs.push(r.text().trim())
-      let s = r.siblings()
-      s.each(function() {
-        if ($(this).is('p')) {
-          refs.push($(this).text().trim())
-        }
-      })
-    } */
-
+    r = $('h2:contains("Referencias"), h3:contains("Referencias")').next()
     while (r.is('p')) {
       refs.push(r.html().trim())
       r = r.next()
