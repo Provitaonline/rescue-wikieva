@@ -142,12 +142,12 @@ function extract(file) {
   addToContent('binomialNameAuthor', $('tr:contains("Nombre binomial")').next().find('span').eq(1).text().trim())
   addToContent('distributionMapUrl', $('th:contains("Distribución")').parent().next().find('td>a>img').attr('src'))
   addToContent('regionalCategoryAndCriteria', $('li:contains("Categoría y Criterio Regional")').text().split(': ').pop().trim())
-  addToContent('regionalEvaluationDate', $('li:contains("Fecha de Evaluación Regional")').text().split(': ').pop())
-  addToContent('evaluators', $('li:contains("Evaluadores")').text().split(': ').pop())
-  addToContent('globalCategoryAndCriteria', $('li:contains("Categoría y Criterio Global")').text().split(': ').pop())
+  addToContent('regionalEvaluationDate', $('li:contains("Fecha de Evaluación Regional")').text().split(': ').pop().trim())
+  addToContent('evaluators', $('li:contains("Evaluadores")').text().split(': ').pop().trim())
+  addToContent('globalCategoryAndCriteria', $('li:contains("Categoría y Criterio Global")').text().split(': ').pop().trim())
 
   if ($('h2:contains("Justificación"),h3:contains("Justificación")').next().is('p')) {
-    addToContent('justification', $('h2:contains("Justificación"),h3:contains("Justificación")').next().text())
+    addToContent('justification', $('h2:contains("Justificación"),h3:contains("Justificación")').next().text().trim())
   }
   let pE = []
   let p = $('h2:contains("Evaluaciones Previas"),h3:contains("Evaluaciones Previas")').next()
@@ -178,10 +178,10 @@ function extract(file) {
     addToContent('distribution', $('h2:contains("Distribución"), h3:contains("Distribución")').next().html().trim())
   }
 
-  addToContent('system', $('li:contains("Sistema:")').text().split(': ').pop())
-  addToContent('bioregion', $('li:contains("Bioregión:")').text().split(': ').pop())
-  addToContent('altitudeRange', $('li:contains("Intervalo altitudinal (m):")').text().split(': ').pop())
-  addToContent('isEndemic', $('li:contains("Endémica:")').text().split(': ').pop())
+  addToContent('system', $('li:contains("Sistema:")').text().split(': ').pop().trim())
+  addToContent('bioregion', $('li:contains("Bioregión:")').text().split(': ').pop().trim())
+  addToContent('altitudeRange', $('li:contains("Intervalo altitudinal (m):")').text().split(': ').pop().trim())
+  addToContent('isEndemic', $('li:contains("Endémica:")').text().split(': ').pop().trim())
 
   let status = ''
   let n = $('h2:contains("Situación"), h3:contains("Situación")').next()
@@ -195,9 +195,9 @@ function extract(file) {
   }
   addToContent('status', status)
 
-  addToContent('EOO', $('li:contains("EOO (km2)")').text().split(': ').pop())
-  addToContent('AOO', $('li:contains("AOO (km2)")').text().split(': ').pop())
-  addToContent('populationTrend', $('li:contains("Tendencia Poblacional")').text().split(': ').pop())
+  addToContent('EOO', $('li:contains("EOO (km2)")').text().split(': ').pop().trim())
+  addToContent('AOO', $('li:contains("AOO (km2)")').text().split(': ').pop().trim())
+  addToContent('populationTrend', $('li:contains("Tendencia Poblacional")').text().split(': ').pop().trim())
 
   if ($('h2:contains("Amenazas"), h3:contains("Amenazas")').next().is('p')) {
     addToContent('threats', $('h2:contains("Amenazas"), h3:contains("Amenazas")').next().html().trim())
