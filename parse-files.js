@@ -97,8 +97,11 @@ function collectTaxonomy(file) {
   if (!taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family]) taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family] = {}
   if (!taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus]) taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus] = {}
 
-  taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus][content.species] = file.split('.')[0] + '.json'
-
+  taxonomy[content.kingdom][content.phylum][content.class][content.order][content.family][content.genus][content.binomialName] = {
+    jsonFile: file.split('.')[0] + '.json',
+    hasDescription: content.description != undefined,
+    risk: content.risk
+  }
 }
 
 function addToContent(field, fieldContent) {
@@ -139,6 +142,7 @@ function extract(file) {
   addToContent('genus', $('th:contains("Género:")').next().eq(0).text().trim().replace(/'/g, ''))
   addToContent('species', $('th:contains("Especie:")').next().eq(0).text().trim().replace(/'/g, ''))
   addToContent('binomialName', $('tr:contains("Nombre binomial")').next().find('span>i').text().trim())
+  if (content.binomialName === undefined) content.binomialName = content.scientificName
   addToContent('binomialNameAuthor', $('tr:contains("Nombre binomial")').next().find('span').eq(1).text().trim())
   addToContent('distributionMapUrl', $('th:contains("Distribución")').parent().next().find('td>a>img').attr('src'))
   addToContent('regionalCategoryAndCriteria', $('li:contains("Categoría y Criterio Regional")').text().split(': ').pop().trim())
