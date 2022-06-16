@@ -141,7 +141,7 @@ function extract(file) {
   addToContent('family', $('th:contains("Familia:")').next().eq(0).text().trim().replace(/'/g, ''))
   addToContent('genus', $('th:contains("Género:")').next().eq(0).text().trim().replace(/'/g, ''))
   addToContent('species', $('th:contains("Especie:")').next().eq(0).text().trim().replace(/'/g, ''))
-  addToContent('binomialName', $('tr:contains("Nombre binomial")').next().find('span>i').text().trim())
+  addToContent('binomialName', $('tr:contains("Nombre binomial")').next().find('span>i').eq(0).text().trim())
   if (content.binomialName === undefined) content.binomialName = content.scientificName
   addToContent('binomialNameAuthor', $('tr:contains("Nombre binomial")').next().find('span').eq(1).text().trim())
   addToContent('distributionMapUrl', $('th:contains("Distribución")').parent().next().find('td>a>img').attr('src'))
